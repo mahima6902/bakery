@@ -1,8 +1,137 @@
 _schema-version: 3.3.0
 ID: bakery
+description: A simple CAP project.
 version: 1.0.0
-description: "A simple CAP project."
+modules:
+  - name: bakery-srv
+    type: nodejs
+    path: gen/srv
+    requires:
+      - name: bakery-db
+      - name: uaa_bakery
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+      readiness-health-check-http-endpoint: /health
+      readiness-health-check-type: http
+    build-parameters:
+      builder: npm
+  - name: bakery-db-deployer
+    type: hdb
+    path: db
+    requires:
+      - name: bakery-db
+    parameters:
+      buildpack: nodejs_buildpack
+  - name: bakery-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: bakery-destination-service
+        parameters:
+          content-target: true
+      - name: bakery_html_repo_host
+        parameters:
+          service-key:
+            name: bakery_html_repo_host-key
+      - name: uaa_bakery
+        parameters:
+          service-key:
+            name: uaa_bakery-key
+    parameters:
+      content:
+        instance:
+          destinations:
+            - Name: ManagedAppRouter_bakery_html_repo_host
+              ServiceInstanceName: bakery-html5-app-host-service
+              ServiceKeyName: bakery_html_repo_host-key
+              sap.cloud.service: ManagedAppRouter
+            - Authentication: OAuth2UserTokenExchange
+              Name: ManagedAppRouter_uaa_bakery
+              ServiceInstanceName: bakery-xsuaa-service
+              ServiceKeyName: uaa_bakery-key
+              sap.cloud.service: ManagedAppRouter
+          existing_destinations_policy: ignore
+    build-parameters:
+      no-source: true
+  - name: bakery-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: bakery_html_repo_host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - bakeryapp.zip
+          name: bakeryapp
+          target-path: resources/
+  - name: bakeryapp
+    type: html5
+    path: app/bakeryapp
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms:
+        []
+resources:
+  - name: bakery-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: bakery-destination-service
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            destinations:
+              - Authentication: NoAuthentication
+                Name: ui5
+                ProxyType: Internet
+                Type: HTTP
+                URL: https://ui5.sap.com
+              - Authentication: NoAuthentication
+                HTML5.DynamicDestination: true
+                HTML5.ForwardAuthToken: true
+                Name: bakery-srv-api
+                ProxyType: Internet
+                Type: HTTP
+                URL: ~{srv-api/srv-url}
+            existing_destinations_policy: update
+        version: 1.0.0
+      service: destination
+      service-name: bakery-destination-service
+      service-plan: lite
+    requires:
+      - name: srv-api
+  - name: bakery_html_repo_host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-name: bakery-html5-app-host-service
+      service-plan: app-host
+  - name: uaa_bakery
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        tenant-mode: dedicated
+        xsappname: bakery-${org}-${space}
+      path: ./xs-security.json
+      service: xsuaa
+      service-name: bakery-xsuaa-service
+      service-plan: application
 parameters:
+  deploy_mode: html5-repo
   enable-parallel-deployments: true
 build-parameters:
   before-all:
@@ -10,34 +139,3 @@ build-parameters:
       commands:
         - npm ci
         - npx cds build --production
-modules:
-  - name: bakery-srv
-    type: nodejs
-    path: gen/srv
-    parameters:
-      buildpack: nodejs_buildpack
-      readiness-health-check-type: http
-      readiness-health-check-http-endpoint: /health
-    build-parameters:
-      builder: npm
-    provides:
-      - name: srv-api # required by consumers of CAP services (e.g. approuter)
-        properties:
-          srv-url: ${default-url}
-    requires:
-      - name: bakery-db
-
-  - name: bakery-db-deployer
-    type: hdb
-    path: db
-    parameters:
-      buildpack: nodejs_buildpack
-    requires:
-      - name: bakery-db
-
-resources:
-  - name: bakery-db
-    type: com.sap.xs.hdi-container
-    parameters:
-      service: hana
-      service-plan: hdi-shared

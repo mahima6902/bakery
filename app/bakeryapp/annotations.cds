@@ -1,0 +1,1 @@
+using bakeryservice as service from '../../srv/bakery_srv';

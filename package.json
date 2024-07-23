@@ -6,12 +6,17 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@cap-js/hana": "^1",
     "@sap/cds": "^8",
-    "express": "^4",
-    "@cap-js/hana": "^1"
+    "@sap/xssec": "^4",
+    "express": "^4"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "watch-bakeryapp": "cds watch --open bakeryapp/webapp/index.html?sap-ui-xx-viewCache=false",
+    "undeploy": "cf undeploy bakery --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
   },
   "cds": {
     "build": {
@@ -28,7 +33,15 @@
     "requires": {
       "db": {
         "kind": "hana-cloud"
-      }
+      },
+      "auth": "basic"
     }
+  },
+  "sapux": [
+    "app/bakeryapp"
+  ],
+  "devDependencies": {
+    "@sap/ux-specification": "^1.120.14",
+    "rimraf": "^5.0.5"
   }
 }
