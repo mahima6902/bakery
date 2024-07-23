@@ -1,0 +1,19 @@
+### Test Products Service
+
+# Get all products
+GET http://localhost:42281/odata/v4/bakeryservice/products
+
+# ### Get a specific product
+# GET {{host}}/{{service}}/products(1)
+
+### Create a new product
+POST http://localhost:42281/odata/v4/bakeryservice/products
+Content-Type: application/json
+
+{
+  "name": "New Cake",
+  "description": "Delicious new cake",
+  "price": 15.99,
+  "stock": 50,
+  "category_id": 1
+}

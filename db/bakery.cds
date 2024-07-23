@@ -4,7 +4,7 @@ namespace bakery;
 //tableA - Products
 entity products {
     @title: 'Product ID'
-    key id: Integer;
+    key id: UUID;
 
     @title: 'Product Name'
     name: String(100);
@@ -26,7 +26,7 @@ entity products {
 //tableB - Categories
 entity categories {
     @title: 'Category ID'
-    key id: Integer; 
+    key id: UUID; 
 
     @title: 'Category Name'
     name: String(100); 
@@ -42,7 +42,7 @@ entity categories {
 //tableC - Orders
 entity orders {
     @title: 'Order ID'
-    key id: Integer; 
+    key id: UUID; 
 
     @title: 'Customer'
     customer: String(100); 
@@ -54,7 +54,7 @@ entity orders {
     status: String(20); 
 
     @title: 'Total Amount'
-    totalamount: Decimal(10,2);
+    totalamount: Decimal;
 
     @title: 'Order Items'
     items: Composition of many orderitems on items.order = $self; 
@@ -64,7 +64,7 @@ entity orders {
 //tableD - Order Items
 entity orderitems {
     @title: 'Item ID'
-    key id: Integer;
+    key id: UUID;
 
     @title: 'Order'
     order: Association to orders; 
@@ -76,5 +76,5 @@ entity orderitems {
     quantity: Integer; 
     
     @title: 'Price'
-    price: Decimal(10,2); 
+    price: Decimal; 
 }
