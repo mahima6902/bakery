@@ -1,4 +1,6 @@
 const cds = require('@sap/cds');
+const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
+const cdsServe = require('@sap/cds/lib/srv/cds-serve');
 const axios = require('axios');
 
 module.exports = cds.service.impl(async function () {
@@ -7,26 +9,28 @@ module.exports = cds.service.impl(async function () {
 
     // tableA - Products
     this.on('READ', products, async (req) => {
-        const northwindUrl = `${northwindBaseUrl}/Products`;
-        try {
-            const response = await axios.get(northwindUrl);
-            const northwindProducts = response.data.value;
+        //for presenting the added data
+        return await cds.run(SELECT.from(products).where('stock >', 25))
+        //     const northwindUrl = `${northwindBaseUrl}/Products`;
+        //     try {
+        //         const response = await axios.get(northwindUrl);
+        //         const northwindProducts = response.data.value;
 
-            // Map Northwind products to schema
-            const mappedProducts = northwindProducts.map(np => ({
-                id: np.ProductID,
-                name: np.ProductName,
-                description: np.QuantityPerUnit,
-                price: np.UnitPrice,
-                stock: np.UnitsInStock,
-                category_id: np.CategoryID
-            }));
-            return mappedProducts;
-        }
-        catch (error) {
-            console.error('Error fetching Northwind products:', error);
-            req.error(500, 'Error fetching products from Northwind service');
-        }
+        //         // Map Northwind products to schema
+        //         const mappedProducts = northwindProducts.map(np => ({
+        //             id: np.ProductID,
+        //             name: np.ProductName,
+        //             description: np.QuantityPerUnit,
+        //             price: np.UnitPrice,
+        //             stock: np.UnitsInStock,
+        //             category_id: np.CategoryID
+        //         }));
+        //         return mappedProducts;
+        //     }
+        //     catch (error) {
+        //         console.error('Error fetching Northwind products:', error);
+        //         req.error(500, 'Error fetching products from Northwind service');
+        //     }
     });
 
     this.on('CREATE', products, async (req) => {
@@ -40,47 +44,49 @@ module.exports = cds.service.impl(async function () {
 
     //tableB - Categories
     this.on('READ', categories, async (req) => {
-        const northwindUrl = `${northwindBaseUrl}/Categories`;
-        try {
-            const response = await axios.get(northwindUrl);
-            const northwindCategories = response.data.value;
+        return await cds.run(SELECT.from(categories))
+        // const northwindUrl = `${northwindBaseUrl}/Categories`;
+        // try {
+        //     const response = await axios.get(northwindUrl);
+        //     const northwindCategories = response.data.value;
 
-            // Map Northwind categories to schema
-            const mappedCategories = northwindCategories.map(nc => ({
-                id: nc.CategoryID,
-                name: nc.CategoryName,
-                description: nc.Description
-            }));
-            return mappedCategories;
-        }
-        catch (error) {
-            console.error('Error fetching Northwind categories:', error);
-            req.error(500, 'Error fetching categories from Northwind service');
-        }
+        //     // Map Northwind categories to schema
+        //     const mappedCategories = northwindCategories.map(nc => ({
+        //         id: nc.CategoryID,
+        //         name: nc.CategoryName,
+        //         description: nc.Description
+        //     }));
+        //     return mappedCategories;
+        // }
+        // catch (error) {
+        //     console.error('Error fetching Northwind categories:', error);
+        //     req.error(500, 'Error fetching categories from Northwind service');
+        // }
     });
 
 
     //tableC - Orders
     this.on('READ', orders, async (req) => {
-        const northwindUrl = `${northwindBaseUrl}/Orders`;
-        try {
-            const response = await axios.get(northwindUrl);
-            const northwindOrders = response.data.value;
+        return await cds.run(SELECT.from(orders).where('totalamount >', 100))
+        // const northwindUrl = `${northwindBaseUrl}/Orders`;
+        // try {
+        //     const response = await axios.get(northwindUrl);
+        //     const northwindOrders = response.data.value;
 
-            // Map Northwind orders to schema
-            const mappedOrders = northwindOrders.map(no => ({
-                id: no.OrderID,
-                customer: no.CustomerID,
-                orderdate: no.OrderDate,
-                status: no.ShippedDate ? 'Shipped' : 'Pending',
-                totalamount: no.amount 
-            }));
-            return mappedOrders;
-        }
-        catch (error) {
-            console.error('Error fetching Northwind orders:', error);
-            req.error(500, 'Error fetching orders from Northwind service');
-        }
+        //     // Map Northwind orders to schema
+        //     const mappedOrders = northwindOrders.map(no => ({
+        //         id: no.OrderID,
+        //         customer: no.CustomerID,
+        //         orderdate: no.OrderDate,
+        //         status: no.ShippedDate ? 'Shipped' : 'Pending',
+        //         totalamount: no.amount
+        //     }));
+        //     return mappedOrders;
+        // }
+        // catch (error) {
+        //     console.error('Error fetching Northwind orders:', error);
+        //     req.error(500, 'Error fetching orders from Northwind service');
+        // }
     });
 
     this.on('CREATE', orders, async (req) => {
@@ -97,25 +103,27 @@ module.exports = cds.service.impl(async function () {
 
     //tableD - Order Items
     this.on('READ', orderitems, async (req) => {
-        const northwindUrl = `${northwindBaseUrl}/Order_Details`;
-        try {
-            const response = await axios.get(northwindUrl);
-            const northwindOrderDetails = response.data.value;
+        return await cds.run(SELECT.from(orderitems).where('quantity <' , 35))
 
-            // Map Northwind order details to schema
-            const mappedOrderItems = northwindOrderDetails.map(nod => ({
-                id: nod.OrderID * 100 + nod.ProductID, // Creating a unique ID
-                order_id: nod.OrderID,
-                product_id: nod.ProductID,
-                quantity: nod.Quantity,
-                price: nod.UnitPrice
-            }));
-            return mappedOrderItems;
-        }
-        catch (error) {
-            console.error('Error fetching Northwind order details:', error);
-            req.error(500, 'Error fetching order items from Northwind service');
-        }
+        // const northwindUrl = `${northwindBaseUrl}/Order_Details`;
+        // try {
+        //     const response = await axios.get(northwindUrl);
+        //     const northwindOrderDetails = response.data.value;
+
+        //     // Map Northwind order details to schema
+        //     const mappedOrderItems = northwindOrderDetails.map(nod => ({
+        //         id: nod.OrderID * 100 + nod.ProductID, // Creating a unique ID
+        //         order_id: nod.OrderID,
+        //         product_id: nod.ProductID,
+        //         quantity: nod.Quantity,
+        //         price: nod.UnitPrice
+        //     }));
+        //     return mappedOrderItems;
+        // }
+        // catch (error) {
+        //     console.error('Error fetching Northwind order details:', error);
+        //     req.error(500, 'Error fetching order items from Northwind service');
+        // }
     });
 
     // Custom function: Get Products by Category

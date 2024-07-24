@@ -4,9 +4,7 @@ using bakeryservice as bs from '../srv/bakery_srv';
 //tableA - Products
 annotate bs.products with @(
   UI: {
-    CreateHidden: false,
-    UpdateHidden: false,
-    DeleteHidden: false,
+    
     HeaderInfo: {
       TypeName: 'Product',
       TypeNamePlural: 'Products',
@@ -81,6 +79,10 @@ annotate bs.products with @(
         }
       ]
     },
+
+    // CreateHidden: false,
+    // UpdateHidden: false,
+    // DeleteHidden: false
   }
 );
 
